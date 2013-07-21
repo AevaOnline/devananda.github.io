@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Bare Metal Provisioning with OpenStack (Ironic)</title>
+
+		<meta name="description" content="Some ramblings about the hows and whys of Ironic and TripleO">
+		<meta name="author" content="Devananda van der Veen">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<link rel="stylesheet" href="css/reveal.min.css">
+		<link rel="stylesheet" href="css/theme/default.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- If the query includes 'print-pdf', use the PDF print sheet -->
+		<script>
+			document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+                <h2>Bare Metal Provisioning</h2>
+                <h3>with</h3><h2>OpenStack Ironic</h2>
+					<br>
+                    <small>Created by <a href="http://about.me/devananda">Devananda van der Veen</a> /
+                        <a href="http://twitter.com/devananda">@devananda</a> /
+                        <a href="http://hpcloud.com">HP Cloud Services</a> </small>
+				</section>
+
+                <section>
+                    <section>
+                        <h2>In the beginning</h2>                        
+                        <a href="#/2" class="image"><img src="usc-isi-logo.png"></a>
+                        <br>
+                        <a href="#/2" class="image"><img src="ntt-docomo-logo.png"></a>
+                        <aside class="notes">
+                            Initial reason for Bare Metal was high performance compute workloads.
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>Grizzly summit</h2>
+                        <h3>(November 2012)</h3>
+                        <br>
+                        <a href="#/2" class="image"><img src="hp-cloud-logo.png"></a>
+                        <aside class="notes">
+                            In the months before, Chris Krelle and I did a POC of their code.
+                            Saw potential and met with them @ the summit.
+                            Agreed to shift stewardship of the patches to our team.
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>Time goes by...</h2>
+                    </section>
+                    <section>
+                        <h2>Grizzly Release</h2>
+                        <h3>(April 2013)</h3>
+                        <aside class="notes">
+                            Made it into the Grizzly release!
+                            Lots of bugs, but "good enough" to start proofing TripleO.
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>Baremetal's deployment paradigm</h2>
+                        <a href="#/2"><img src="nova-baremetal-topology.png"></a>
+                    </section>
+                    <section>
+                        <h2>under the hood</h2>
+                        <a><img src="nova-baremetal-deploy-process.png"></a>
+                    </section>
+                </section>
+
+                <section>
+                    <section>
+                        <h2>Havana summit</h2>
+                        <h3>(April 2013)</h3>
+                        <aside class="notes">
+                            Features for Bare Metal increasingly don't fit in Nova.
+                            At the Havana design summit, I proposed to split bare metal out of Nova.
+                            About a month later, took it to a vote by the TC, and it passed.
+                            Thus, Ironic was born.
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>OpenStack Ironic</h2>
+                        Not just a split - a redesign
+                    </section>
+                    <section>
+                        <h2>Ironic is a service to <br><i>provision</i><br> bare metal nodes</h2>
+                    </section>
+                    <section>
+                        <h2>Ironic is not...</h2>
+                        <ul>
+                            <li>a Configuration Management Database</li>
+                            <li>a hardware lifecycle management tool</li>
+                        </ul>
+                    </section>
+                    <section>
+                        <h2>Project Goals</h2>
+                    </section>
+                    <section>
+                        <ul>
+                            <li>Be a hardware API and no more</li>
+                            <li>Be resilient to failures</li>
+                            <li>Don't re-invent the wheel</li>
+                            <li>Be extensible</li>
+                        </ul>
+                    </section>
+                    <section>
+                        <ul>
+                            <li>Admins use Ironic API to enroll, configure</li>
+                            <li>Tenants use Nova API for boot, destroy, restart, etc</li>
+                            <li>Network config done by Neutron (*)</li>
+                            <li>Storage config done by Cinder (*)</li>
+                        </ul>
+                    </section>
+                </section>
+                
+                <section>
+                    <section>
+                        <h2>Where are we now?</h2>
+                        <h3>(July 2013)</h3>
+                    </section>
+                    <section>
+                        <h2>Contributions have been amazing</h2>
+                        <br>
+                        <a href="#/2"><img src="ironic-contributors.png"></a>
+                        <aside class="notes">http://www.stackalytics.com/modules/ironic?metric=commits&period=havana&project_type=incubat</aside>
+                    </section>
+                    <section>
+                        <h2>but ironic is not finished</h2>
+                    </section>
+                    <section>
+                        <h2>What can you use today?</h2>
+                    </section>
+                    <section>
+                        <h2>nova</h2>
+                        <h2>+</h2>
+                        <h2>baremetal driver</h2>
+                    </section>
+                </section>
+
+                <section>
+                    <section>
+                        <h2>some significant limitations</h2>
+                    </section>
+                    <section>
+                        <h2>Networking</h2>
+                        <aside class="notes">DHCP via dnsmasq. Non HA deploy nodes. Static IP injected. Work in Neutron...</aside>
+                    </section>
+                    <section>
+                        <h2>disk / raid configuration</h2>
+                        <aside class="notes">Plans to implement this via Cinder volume specification. No work done yet.</aside>
+                    </section>
+                    <section>
+                        <h2>Firmware security</h2>
+                        <aside class="notes">Tenant has full root on host, can do *anything* to the box. Don't reuse boxes. Don't allow untrusted tenants.</aside>
+                    </section>
+                    <section>
+                        <h2>Other considerations</h2>
+                        <aside class="notes">Flavor vs hardware spec. Quotas and whole-host allocation. Billing. Mixed bm & virt clouds.</aside>
+                    </section>
+                    <section>
+                        <h2>What can you <i>do</i> today?</h2>
+                    </section>
+                    <section>
+                        <h2>trusted tenants only</h2>
+                    </section>
+                    <section>
+                        <h2>openstack on openstack</h2>
+                    </section>
+                </section>
+
+                <section>
+                    <section>
+                        <h2>want to get involved?</h2>
+                    </section>
+                    <section>
+                        <ul>
+                            <li>http://docs.openstack.org/developer/ironic/</li>
+                            <li>https://github.com/tripleo/incubator</li>
+                        </ul>
+                    </section>
+                    <section>
+                        irc.freenode.net<br><br>
+                        <ul>
+                            <li>#tripleo</li>
+                            <li>#openstack-ironic</li>
+                            <li>#openstack-nova</li>
+                        </ul>
+                    </section>
+                </section>
+                <section>
+                    <h2>thanks!</h2>
+                    <small>Created by <a href="http://about.me/devananda">Devananda van der Veen</a> /
+                        <a href="http://twitter.com/devananda">@devananda</a> /
+                        <a href="http://hpcloud.com">HP Cloud Services</a> </small>
+                    <br>
+                    <small>Created with <a href="https://github.com/hakimel/reveal.js">Reveal.JS</a></small>
+                </section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.min.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+					// { src: 'plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+					// { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
