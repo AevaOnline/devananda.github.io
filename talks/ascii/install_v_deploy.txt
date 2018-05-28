@@ -1,0 +1,40 @@
+title Install vs. Deploy
+
+participant "user" as op
+participant "service"
+participant "DHCP service" as dhcp
+participant "TFTP service" as tftp
+participant "Host" as host
+
+alt installer-based
+op->service: upload ISO image
+else image-based
+note over op: pre-build image w/\nneeded drivers, apps
+op->service: upload QCOW image
+end
+
+op->+service: deploy it!
+service->dhcp: set DHCP opts
+service->host: power on & boot from network
+host->dhcp: DHCP BOOT request
+dhcp->host: IP + next-ref + kernel params
+host->tftp: fetch kernel & ramdisk
+alt installer-based
+host->service: request kickstart/preseed file
+host->service: request installation media
+host->host: unattended OS installer\nchooses drivers, apps, etc
+else image-based
+host->service: request machine image
+host->host: dd image to disk
+host->service: request config data
+service->host: hostname, SSH keys
+note left of host: optional, may include net info
+host->host: write configdrive to disk
+end
+
+host->service: signals completion of installation
+service->dhcp: removes / changes config
+service->-host: reboot
+alt installer-based
+else image-based
+host->host: cloud-init reads configdrive\napplies configuration

@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>A Modern Approach to Machine Deployment</title>
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/improve-formatting.css">
+<!--    <link rel="stylesheet" href="css/theme/openstack.css" id="theme"> -->
+    <link rel="stylesheet" href="css/theme/black.css" id="theme">
+
+    <!-- For syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <!-- If the query includes 'print-pdf', include the PDF print sheet -->
+    <script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+    </script>
+
+
+    <script src="js/jquery-1.7.2.min.js" charset="utf-8" type="text/javascript"></script>
+<!--    <script src="js/raphael-min.js" type="text/javascript" charset="utf-8"></script> -->
+</head>
+
+<body>
+<!--  <div class="background">
+      <img alt="" id="head-icon" width="218" height="67"
+           src="images/openstack-cloud-software-horizontal-small.png" /></div> -->
+
+  <div class="reveal">
+    <!-- Any section element inside of this container is displayed as a slide -->
+    <div class="slides">
+        <section data-state="cover">
+            <h1><span xmlns:dct="http://purl.org/dc/terms/"
+                    href="http://purl.org/dc/dcmitype/InteractiveResource"
+                    property="dct:title"
+                    rel="dct:type">
+                Ironic
+          </span></h1>
+          <h3>A Cloudy Approach <br>to Hardware</h3><br>
+          <h4 xmlns:cc="http://creativecommons.org/ns#"
+              property="cc:attributionName">Devananda van der Veen</h4>
+          <br>
+          <h4><a xmlns:cc="http://creativecommons.org/ns#"
+                 rel="cc:attributionURL"
+                 href='http://devananda.github.io/talks/ironic-modern-deployment.html'>github.com/devananda/talks</a> </h4>
+        </section>
+        <section id="who-am-i">
+            <ul><br><BR><BR>
+                <li>Cloud Architect @ IBM / SoftLayer</li>
+                <li><strike>HP Cloud</strike></li>
+                <li>OpenStack since 2012</li>
+                <li>Yoichi single malt</li>
+                <li>@devananda</li>
+            </ul>
+            <image src="images/oscon_2015_pic_cropped.jpg" width="30%" align="right"/>
+        </section>
+        <section>
+            <section id='abstract'>
+                Virtual Machines are <b>abstractions</b> of computers.<br><br>
+                <image src="images/containers.jpg" width="40%" align="center"/>
+            </section>
+            <section id="trend-virtualization">
+                <h3>Virtualization & Cloud Computing</h3>
+                <image src="images/Interest-VirtAndCloud.jpg" />
+            </section>
+            <section id="trend-devops">
+                <h3>DevOps & OpenStack</h3>
+                <image src="images/Interest-DevopsAndOpenstack.jpg" />
+            </section>
+            <section id="isnt-it-ironic">
+                If sufficiently abstracted,<br>
+                a physical machine behaves like a virtual machine.<br>
+            </section>
+            <section id="question">
+                Consumption API + hardware abstraction?<br><br>
+                <div class="fragment">
+                    <img src="images/Ironic_mascot_color.png" width=30%>
+                </div>
+            </section>
+            <section id="answer">
+                <pre><code>nova boot \
+    --flavor baremetal.high_mem \
+    --image Ubuntu_Trusty \
+    --key-name my_keypair \
+    my_high_mem_server </code></pre>
+            </section>
+        </section>
+        <section>
+            <section id="why-not">
+                Every company* had built framework<br>for PXE boot & install OS<br><br>
+                <small>* every company that owns hardware</small>
+                <div class="fragment">
+                    However, binary image copy<br>improves repeatability, reduces entropy<br><br>
+                </div>
+            </section>
+            <section id="ivd1">
+                <img src="images/install_v_deploy.1.png" width="100%"/>
+            </section>
+            <section id="ivd2">
+                <img src="images/install_v_deploy.2.png" width="100%"/>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h1>Architecture</h1>
+            </section>
+            <section id="components">
+                <h2>Service Components</h2>
+                <img src="images/ironic-arch-driver-ring-liberty.jpg" width="100%"/>
+            </section>
+            <section id="tech1">
+                <h2>Standard Protocols</h2>
+                <u>Power</u>
+                <ul>
+                    <li><b>IPMI: </b>intelligent platform management interface,
+                        for remote control of machine power state, boot device, serial console, etc.</li>
+                    <li><b>SNMP: </b> simple network management protocol,
+                        often used with Power Distribution Units for remote
+                        control of power status.</li>
+                </ul>
+            </section>
+            <section id="tech2">
+                <h2>Standard Protocols</h2>
+                <u>Boot</u>
+                <ul>
+                    <li><b>DHCP: </b>dynamic host configuration protocol, used to locate the NBP on the network,
+                        and provide the host OS with IP address during init</li>
+                    <li><b>TFTP: </b>trivial file transfer protocol, copies the NBP over the network</li>
+                    <li><b>PXE: </b>pre-boot execution environment, allows host to boot from network</li>
+                    <li><b>[g,i]PXE: </b>recent enhancements make PXE more
+                        flexible, supported on most hardware</li>
+                </ul>
+            </section>
+            <section id="changing-hardware">
+                IPMI has not changed in the last <u>10</u> years
+                <br><br>
+                <div class="fragment">
+                    DMTF just published "Redfish" spec ...
+                    <br>
+                    but ...
+                </div>
+            </section>
+            <section id="open-software">
+                Vendor value is derived from quality of<br>
+                hardware, services, support, and integration<br><br>
+                not from proprietary solutions to common problems<br>
+            </section>
+<!---            
+            <section id="north">
+                <h2>REST API</h2><br>
+                Three* resource types: Node, Port, Driver<br><br>
+                <a href="http://docs.openstack.org/developer/ironic/webapi/v1.html">
+                docs.openstack.org/developer/ironic/webapi/v1.html</a><br><br>
+
+            <small>(*) A fourth resource type, "chassis",<br>is a remnant of early designs, and doesn't perform a meaningful function today</small>
+            </section>
+-->            
+            <section id="south">
+                <h2>Driver API</h2>
+                <img src="images/driver_api.jpg">
+            </section>
+            <section id="south-simple">
+                simplicity &#8594; <i>flexibility</i><br><br>
+                consistency &#8594; <i>repeatability</i>
+            </section>
+
+            <section id="north2">
+                <div align=left>GET /v1/nodes/</div>
+                <pre>{
+   "nodes" : [
+      {
+         "name" : "nuc",
+         "maintenance" : false,
+         "instance_uuid" : null,
+         "power_state" : "power off",
+         "uuid" : "ba031dea-e7a8-4917-89f1-0f3ad31344ee",
+         "provision_state" : "available"
+         "links" : [
+              .... snip ....
+         ],
+      },
+   ]
+}</pre>
+            </section>
+            <section id="north3">
+                <div align=left>GET /v1/nodes/ba031dea-e7a8-4917-89f1-0f3ad31344ee</div>
+                <pre><code>{
+   "name" : "nuc",                                      # human readable name
+   "uuid" : "ba031dea-e7a8-4917-89f1-0f3ad31344ee",     # canonical reference
+   "driver" : "pxe_amt",                                # hardware driver
+   "properties" : {                                     # hardware characteristics
+      "ram" : 8096,
+      "cpu_arch" : "x86_64",
+      "cpus" : 2,
+      "disk_size" : 500
+   },
+   "driver_info" : {                                    # driver management data
+      "amt_password" : "******",
+      "amt_address" : "192.168.2.3",
+      "amt_username" : "admin"
+   },
+   "power_state" : "power off",                         # last known power state
+   "target_power_state" : null,                         # non-null if change requested
+   "provision_state" : "available",                     # current provision state
+   "target_provision_state" : null,                     # non-null if change requested
+   "instance_info" : {                                  # parameters for the next instance
+       "root_gb : 100,
+       "image_source" : "http://192.168.2.100/images/my-image.qcow2"
+    },
+   "instance_uuid" : null,                              # external reference for instance
+   "maintenance" : false,                               # "release valve" for hardware maintenance
+   "maintenance_reason" : null,                         # optional explanation
+   "last_error" : null,                                 # last error encountered by driver
+   "console_enabled" : false,                           # serial console status
+   "extra" : {},                                        # ignored by Ironic
+   "inspection_started_at" : null,                      # exposed timing data
+   "inspection_finished_at" : null,                     # exposed timing data
+   "created_at" : "2015-05-14T16:46:26+00:00",          # exposed timing data
+   "updated_at" : "2015-06-02T19:37:32+00:00",          # exposed timing data
+   "provision_updated_at" : null,                       # exposed timing data
+   "reservation" : null,                                # exposed lock status
+   "clean_step" : {}                                    # exposed driver status
+   "driver_internal_info" : {                           # exposed driver status
+      "amt_boot_persistent" : true,
+      "amt_boot_device" : "disk"
+   },
+   ...
+}</code></pre>
+            </section>
+            <section id="north6">
+                Every driver is different<br> and requires different <code>driver_info</code><br>
+            </section>
+<!---
+            <section id="north7">
+                GET /v1/drivers/agent_ipmitool/properties
+                <pre><code>{
+   "ipmi_protocol_version" : "the version of the IPMI protocol; default is \"2.0\". One of \"1.5\", \"2.0\". Optional.",
+   "ipmi_local_address" : "local IPMB address for bridged requests. Used only if ipmi_bridging is set to \"single\" or \"dual\". Optional.",
+   "ipmi_terminal_port" : "node's UDP port to connect to. Only required for console access.",
+   "deploy_ramdisk" : "UUID (from Glance) of the ramdisk with agent that is used at deploy time. Required.",
+   "ipmi_target_address" : "destination address for bridged request. Required only if ipmi_bridging is set to \"single\" or \"dual\".",
+   "ipmi_bridging" : "bridging_type; default is \"no\". One of \"single\", \"dual\", \"no\". Optional.",
+   "ipmi_address" : "IP address or hostname of the node. Required.",
+   "ipmi_password" : "password. Optional.",
+   "ipmi_username" : "username; default is NULL user. Optional.",
+   "ipmi_priv_level" : "privilege level; default is ADMINISTRATOR. One of ADMINISTRATOR, CALLBACK, OPERATOR, USER. Optional.",
+   "ipmi_target_channel" : "destination channel for bridged request. Required only if ipmi_bridging is set to \"single\" or \"dual\".",
+   "ipmi_transit_channel" : "transit channel for bridged request. Required only if ipmi_bridging is set to \"dual\".",
+   "deploy_kernel" : "UUID (from Glance) of the deployment kernel. Required.",
+   "ipmi_transit_address" : "transit address for bridged request. Required only if ipmi_bridging is set to \"dual\"."
+}</code></pre>
+                GET /v1/drivers/<i>drivername</i>/properties
+                <pre><code>{
+   "ilo_username" : "username for the iLO with administrator privileges. Required.",
+   "client_timeout" : "timeout (in seconds) for iLO operations. Optional.",
+   "ilo_address" : "IP address or hostname of the iLO. Required.",
+   "deploy_ramdisk" : "UUID (from Glance) of the ramdisk that is mounted at boot time. Required.",
+   "console_port" : "node's UDP port to connect to. Only required for console access.",
+   "ilo_change_password" : "new password for iLO. Required if the clean step 'reset_ilo_credential' is enabled.",
+   "deploy_kernel" : "UUID (from Glance) of the deployment kernel. Required.",
+   "client_port" : "port to be used for iLO operations. Optional.",
+   "ilo_password" : "password for ilo_username. Required."
+}
+{
+   "snmp_outlet" : "PDU power outlet index (1-based).  Required.",
+   "snmp_version" : "SNMP protocol version: 1, 2c, 3  (optional, default 1)",
+   "snmp_driver" : "PDU manufacturer driver.  Required.",
+   "snmp_port" : "SNMP port, default 161",
+   "snmp_address" : "PDU IPv4 address or hostname.  Required.",
+   "deploy_kernel" : "UUID (from Glance) of the deployment kernel. Required.",
+   "snmp_community" : "SNMP community.  Required for versions 1, 2c",
+   "snmp_security" : "SNMP security name.  Required for version 3",
+   "deploy_ramdisk" : "UUID (from Glance) of the ramdisk that is mounted at boot time. Required."
+}</code></pre>
+            </section>
+            <section id="north8">
+                Instances are assumed to be different.<br>
+                Therefore, <code>instance_info</code> is cleared after instance deletion.
+            </section>
+            <section id="vendors">
+                Vendors can implement additional capabilities <br>which are <i>passed directly</i> to their driver.<br><br>
+                <div class="fragment">
+                These are implemented at:<br><br>
+                <code>/v1/drivers/NAME/vendor_passthru/
+                /v1/nodes/UUID/vendor_passthru/</code><br>
+                </div><br>
+                <div class="fragment">
+                    In practice, this is little used, as drivers<br>
+                    are encouraged to converge into a common API.
+                </div>
+            </section>
+        </section>
+        <section>
+            <section id="deploy-notes">
+                <h2>Deployment sequence</h2><br>
+                This is just an example.<br>
+                Different drivers do things differently, after all.<br><br>
+            </section>
+            <section id="deploy-with-agent1">
+                <img src="images/deploy_with_agent.1.png" width="100%"/>
+            </section>
+            <section id="deploy-with-agent2">
+                <img src="images/deploy_with_agent.2.png" width="100%"/>
+            </section>
+            <section id="state-text">
+                <h2>Provisioning State Machine</h2>
+                <br>
+                <img src="images/kilo-state-machine.png" width="45%" align="right">
+                <div align="left">
+                STATE<br> - stable (or passive) state<br><br>
+                R:verb<br> - <i>request</i> that begins a transition<br><br>
+                [STATE*/TARGET]<br> - active, momentary, or error state<br></div>
+            </section>
+            <section id="state-pic">
+                <img src="images/kilo-state-autogen.png" width="100%">
+                <small><i>(it's always more complicated than you expect)</i></small>
+            </section>
+-->
+        </section>
+
+        <section>
+            <section id="operating-it">
+                <h2>Operations</h2>
+            </section>
+            <section id="openstack">
+                <img src="images/openstack-software-diagram.jpg" width=80%>
+            </section>
+            <section id="integration">
+                <img src="images/conceptual_architecture.png">
+            </section>
+            <section id="scale-test">
+                "Thousands" of servers managed today per region.<br>
+            </section>
+            <section id="ops-scale">
+                <div align=left>However...<br><br></div>
+                <ul>
+                    <li>Parallel deploys can saturate network</li>
+                    <li>Periodic health checking can be delayed by bad BMCs</li>
+                    <li>Nova scheduler does resource selection in Python</li>
+                    <li>Neutron DHCP config reload is slow</li>
+                </ul>
+            </section>
+        </section>
+        <section>
+            <section id="bifrost">
+                "But OpenStack is too complex!<br>
+                Is there a simple alternative?"<br><br>
+                <div class="fragment">
+                    Yes<br>
+                    Run Ironic straight from Ansible.
+                </div>
+            </section>
+            <section id="kity">
+                <img src="images/rainbow-unicorn-kitty-bifrost.jpg">
+            </section>
+            <section id="bifrost1">
+                <b>First</b><br>
+                input environment vars
+                <pre><code>$ cat bifrost/playbooks/inventory
+---
+node_default_network_interface: eth0
+network_interface: eth2
+ipv4_subnet_mask: 255.255.255.0
+ipv4_gateway: 192.168.1.1
+ipv4_nameserver: 8.8.8.8
+dhcp_pool_start: 192.168.2.200
+dhcp_pool_end: 192.168.2.250
+deploy_kernel: "{{http_boot_folder}}/coreos_production_pxe.vmlinuz"
+deploy_ramdisk: "{{http_boot_folder}}/coreos_production_pxe_image-oem.cpio.gz"
+deploy_image_filename: "deployment_image.qcow2"
+deploy_image: "{{http_boot_folder}}/{{deploy_image_filename}}"
+                    </code></pre>
+            </section>
+            <section id="bifrost2">
+                Then <b>Install</b><br>
+                external dependencies & environment prep<br>
+                <pre><code>$ bash ./scripts/env-setup.sh
+$ source /opt/stack/ansible/hacking/env-setup
+$ cd playbooks
+
+$ ansible-playbook -K -vvvv -i inventory/localhost install.yaml</code></pre>
+            </section>
+            <section id="bifrost3">
+                Then <b>Enroll</b><br>
+                with an inventory file<br>
+                <pre><code>$ ansible-playbook -vvvv -i inventory/localhost enroll.yaml \
+    -e baremetal_csv_file=baremetal.csv</code></pre>
+                or by using CLI to create Nodes, Ports<br>
+                <pre><code>$ ironic node-create -d agent_amttool -n nuc \
+    -i amt_password='Pa$$w0rd' -i amt_address='192.168.2.3' -i amt_username='admin' \
+    -p cpu_arch=x86_64 -p local_gb=64 -p memory_mb=8192 -p cpus=2 \
+    -i deploy_ramdisk='http://192.168.2.2:8080/coreos_production_pxe_image-oem.cpio.gz' \
+    -i deploy_kernel='http://192.168.2.2:8080/coreos_production_pxe.vmlinuz'
+
+$ ironic port-create -n $UUID -a ec:a8:6b:fe:e1:b0</code></pre>
+            </section>
+            <section id="bifrost4">
+                Finally, <b>Deploy</b><br>
+                from the inventory file<br>
+                or hit all inventory in Ironic<br><br>
+                <pre><code>$ ansible-playbook -vvvv -i inventory/bifrost_inventory.py \
+    deploy-dynamic.yaml</code></pre>
+            </section>
+        </section>
+        <section>
+            <section id="demo">
+                <h2>
+                    Demo?<br><br>
+                    Q & A?
+                </h2>
+            </section>
+        </section>
+        <section id="end">
+            <h1>Thanks!</h1><br>
+            @devananda<br><br>
+            <a href="http://devananda.github.io/talks/">devananda.github.io/talks</a>
+            <br><br>
+            <a href="http://github.com/openstack/ironic/">github.com/openstack/ironic</a><br>
+            <a href="http://github.com/openstack/bifrost/">github.com/openstack/bifrost</a>
+        </section>
+    </div>
+  </div>
+
+  <script src="lib/js/head.min.js"></script>
+  <script src="js/reveal.js"></script>
+  <script>
+      // Full list of configuration options available here:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+          controls: true,
+          progress: true,
+          history: true,
+          center: true,
+
+          theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+          transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+          // Optional libraries used to extend on reveal.js
+          dependencies: [
+              { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+              { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+              { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+              { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+              { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+              { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+              // { src: 'plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+              // { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+          ]
+      });
+  </script>
+</body>
+</html>

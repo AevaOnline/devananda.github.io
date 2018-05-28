@@ -1,0 +1,24 @@
+title Enrolling hardware
+
+participant "User" as user
+participant "API service" as api
+participant "Conductor service" as cdr
+participant "Database" as db
+participant "Object service" as swift
+participant "DHCP provider" as dhcp
+participant "Image provider" as http
+participant "BMC" as bmc
+participant "Deploy Agent" as agent
+
+
+user->api: create Node
+note over api: generate UUID,\nsave Node to DB
+api->user: {node_uuid: abcd-...}
+
+loop periodic task: power status sync
+cdr->bmc: get power state
+bmc->cdr: response
+note over cdr: record power state in DB
+end
+
+

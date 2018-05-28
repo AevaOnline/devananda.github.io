@@ -1,0 +1,20 @@
+title Ironic Deploy Flow for Agent + iLO + vMedia
+
+Nova->Ironic: set instance info
+Nova->Ironic: deploy it!
+Ironic->Ironic: validate inputs, driver info
+Ironic->Ironic: build configdrive, upload to Swift
+Ironic->Node(HW): attach Agent boot image to vMedia
+Ironic->Node(HW): set bootdev, power on
+note right of Node(HW): boots Agent from vMedia
+note right of Node(HW): DHCP request
+note right of Node(HW): needs route to ironic, swift, glance
+Node(Agent)->Ironic: lookup()
+Ironic->Node(Agent): responds with Node UUID
+Node(Agent)->Ironic: heartbeat begins
+Ironic->Node(Agent): disk info + image URL
+note right of Node(Agent): downloads image from glance
+note right of Node(Agent): partitions disks, writes configdrive
+Node(Agent)->Ironic: deploy is done
+Ironic->Node(HW): set bootdev and reboot
+note right of Node(HW): boots into user instance

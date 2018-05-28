@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>Using Ansible for Cloud automation</title>
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/openstack.css" id="theme">
+
+    <!-- For syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <!-- If the query includes 'print-pdf', include the PDF print sheet -->
+    <script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+    </script>
+
+
+    <script src="js/jquery-1.7.2.min.js" charset="utf-8" type="text/javascript"></script>
+    <script src="js/raphael-min.js" type="text/javascript" charset="utf-8"></script>
+</head>
+
+<body>
+  <div class="background">
+      <img alt="" id="head-icon" width="218" height="67"
+           src="images/openstack-cloud-software-horizontal-small.png" /></div>
+
+  <div class="reveal">
+    <!-- Any section element inside of this container is displayed as a slide -->
+    <div class="slides">
+        <section data-state="cover">
+            <h1><span xmlns:dct="http://purl.org/dc/terms/"
+                    href="http://purl.org/dc/dcmitype/InteractiveResource"
+                    property="dct:title"
+                    rel="dct:type">
+                Using Ansible for Cloud automation
+          </span></h1>
+          <h3 xmlns:cc="http://creativecommons.org/ns#"
+              property="cc:attributionName">Devananda van der Veen</h3>
+          <h4><a xmlns:cc="http://creativecommons.org/ns#"
+                 rel="cc:attributionURL"
+                 href='http://github.com/devananda/talks/ansible-cloud.html'>http://github.com/devananda/talks/ansible-cloud.html</a> </h4>
+          <h3> twitter: @devananda </h3>
+        </section>
+        <section id="who-am-i">
+            <h1>Who am I</h1>
+            <ul>
+                <li>Master Engineer at HP</li>
+                <li>OpenStack Technical Committee</li>
+                <li>OpenStack Ironic PTL</li>
+            </ul>
+        </section>
+        <section id="what-to-talk-about">
+            <h1>What we're going to talk about</h1>
+            <ul>
+                <li>Ansible</li>
+            </ul>
+        </section>
+      <section>
+          <h1>Step Three: Ansible for Cloud Management</h1>
+      </section>
+
+      <section>
+          <h1>Ansible and OpenStack</h1>
+          <ul>
+              <li>Ansible modules are just python</li>
+              <li>playbooks are lists of steps to take</li>
+              <li>Have plays/roles that provision servers</li>
+              <li>Infrastructure as code - for real!</li>
+          </ul>
+      </section>
+
+      <section>
+          <h1>Consider this puppet data</h1>
+          (comes from OpenStack Infra project)
+          <pre><code>
+pypi.dfw.openstack.org:
+  image_name: Ubuntu 12.04.4
+  flavor_ram: 2048
+  region: DFW
+  cloud: rackspace
+  volumes:
+    - size: 200
+      mount: /srv
+pypi.region-b.geo-1.openstack.org:
+  image_name: Ubuntu 12.04.4
+  flavor_ram: 2048
+  region: region-b.geo-1
+  cloud: hp
+  volumes:
+    - size: 200
+      mount: /srv
+          </code></pre>
+    </section>
+
+      <section>
+          <h1>Further consider this data</h1>
+          <pre><code>
+pypi:
+  image_name: Ubuntu 12.04.4
+  flavor_ram: 2048
+  volumes:
+    - size: 200
+      mount: /srv
+  hosts:
+    pypi.dfw:
+      region: DFW
+    pypi.iad:
+      region: IAD
+    pypi.ord:
+      region: ORD
+    pypi.region-b.geo-1:
+      cloud: hp
+          </code></pre>
+    </section>
+
+    <section>
+        <h1>Steps to launch a node</h1>
+        <ol>
+            <li>Create a compute instance</li>
+            <li>Wait for instance to exist</li>
+            <li>Create a floating IP</li>
+            <li>Attach floating IP to instance</li>
+            <li>Create one or more volumes</li>
+            <li>Attach volumes to instance</li>
+            <li>Wait for SSH to work</li>
+            <li>On host, format each volume</li>
+            <li>On host, mount each volume</li>
+            <li>On host, install config management software</li>
+            <li>On host, run config management software</li>
+        </ol>
+    </section>
+
+    <section>
+        <h1>Launch a node</h1>
+        <pre><code>
+---
+- name: Launch Node
+  os_compute:
+      cloud: "{{ cloud }}"
+      region_name: "{{ region_name }}"
+      name: "{{ name }}"
+      image_name: "{{ image_name }}"
+      flavor_ram: "{{ flavor_ram }}"
+      flavor_include: "{{ flavor_include }}"
+      meta:
+          group: "{{ group }}"
+      key_name: "{{ launch_keypair }}"
+  register: node
+            </code></pre>
+        </section>
+        <section>
+            <h1>Volumes</h1>
+            <pre><code>
+- name: Create volumes
+  os_volume:
+      cloud: "{{ cloud }}"
+      size: "{{ item.size }}"
+      display_name: "{{ item.display_name }}"
+  with_items: volumes
+- name: Attach volumes
+  os_compute_volume:
+      cloud: "{{ cloud }}"
+      server_id: "{{ node.id }}"
+      volume_name: "{{ item.display_name }}"
+  with_items: volumes
+  register: attached_volumes
+- debug: var=attached_volumes
+- name: Re-request server to get up to date metadata after the volume loop
+  os_compute_facts:
+      cloud: "{{ cloud }}"
+      name: "{{ name }}"
+  when: attached_volumes.changed
+            </code></pre>
+        </section>
+        <section>
+            <h1>Set up access</h1>
+            <pre><code>
+- name: Wait for SSH to work
+  wait_for: host={{ node.openstack.interface_ip }} port=22
+  when: node.changed == True
+- name: Add SSH host key to known hosts
+  shell: ssh-keyscan "{{ node.openstack.interface_ip|quote }}" &gt;&gt; ~/.ssh/known_hosts
+  when: node.changed == True
+- name: Add all instance public IPs to host group
+  add_host:
+      name: "{{ node.openstack.interface_ip }}"
+      groups: "{{ provision_group }}"
+      openstack: "{{ node.openstack }}"
+  when: attached_volumes|length == 0
+- name: Add all instance public IPs to host and volumes group
+  add_host:
+      name: "{{ node.openstack.interface_ip }}"
+      groups: "{{ provision_group }},hasvolumes"
+      openstack: "{{ node.openstack }}"
+  when: attached_volumes|length != 0
+        </code></pre>
+    </section>
+
+    <section>
+        <h1> Cloud based inventory </h1>
+        <ul>
+            <li> Just ask the cloud for the inventory </li>
+            <li> All of the meta-data the cloud knows is available </li>
+        </ul>
+    </section>
+
+    <section>
+        <pre><code>
+      "pypi.dfw.openstack.org": {
+        "ansible_ssh_host": "23.253.237.8",
+        "openstack": {
+          "HUMAN_ID": true,
+          "NAME_ATTR": "name",
+          "OS-DCF:diskConfig": "MANUAL",
+          "OS-EXT-STS:power_state": 1,
+          "OS-EXT-STS:task_state": null,
+          "OS-EXT-STS:vm_state": "active",
+          "accessIPv4": "23.253.237.8",
+          "accessIPv6": "2001:4800:7817:104:d256:7a33:5187:7e1b",
+          "addresses": {
+            "private": [
+              {
+                "addr": "10.208.195.50",
+                "version": 4
+              }
+            ],
+            "public": [
+              {
+                "addr": "23.253.237.8",
+                "version": 4
+              },
+              {
+                "addr": "2001:4800:7817:104:d256:7a33:5187:7e1b",
+                "version": 6
+              }
+            ]
+          },
+          "cloud": "rax",
+          "config_drive": "",
+          "created": "2014-09-05T15:32:14Z",
+          "flavor": {
+            "id": "performance1-4",
+            "links": [
+              {
+                "href": "https://dfw.servers.api.rackspacecloud.com/610275/flavors/performance1-4",
+                "rel": "bookmark"
+              }
+            ],
+            "name": "4 GB Performance"
+          },
+          "hostId": "adb603d4566efe0392756c76dab38ffcba22099368837c7973321e77",
+          "human_id": "pypidfwopenstackorg",
+          "id": "de672205-9245-46b6-b3df-489ccf9e0c17",
+          "image": {
+            "id": "928e709d-35f0-47eb-b296-d18e1b0a76b7",
+            "links": [
+              {
+                "href": "https://dfw.servers.api.rackspacecloud.com/610275/images/928e709d-35f0-47eb-b296-d18e1b0a76b7",
+                "rel": "bookmark"
+              }
+            ]
+          },
+          "interface_ip": "23.253.237.8",
+          "key_name": "launch-node-root",
+          "links": [
+            {
+              "href": "https://dfw.servers.api.rackspacecloud.com/v2/610275/servers/de672205-9245-46b6-b3df-489ccf9e0c17",
+              "rel": "self"
+            },
+            {
+              "href": "https://dfw.servers.api.rackspacecloud.com/610275/servers/de672205-9245-46b6-b3df-489ccf9e0c17",
+              "rel": "bookmark"
+            }
+          ],
+          "metadata": {},
+          "name": "pypi.dfw.openstack.org",
+          "networks": {
+            "private": [
+              "10.208.195.50"
+            ],
+            "public": [
+              "23.253.237.8",
+              "2001:4800:7817:104:d256:7a33:5187:7e1b"
+            ]
+          },
+          "progress": 100,
+          "region": "DFW",
+          "status": "ACTIVE",
+          "tenant_id": "610275",
+          "updated": "2014-09-05T15:32:49Z",
+          "user_id": "156284",
+          "volumes": [
+            {
+              "HUMAN_ID": false,
+              "NAME_ATTR": "name",
+              "attachments": [
+                {
+                  "device": "/dev/xvdb",
+                  "host_name": null,
+                  "id": "c6f5229c-1cc0-47c4-aab7-60db1f6cf8e8",
+                  "server_id": "de672205-9245-46b6-b3df-489ccf9e0c17",
+                  "volume_id": "c6f5229c-1cc0-47c4-aab7-60db1f6cf8e8"
+                }
+              ],
+              "availability_zone": "nova",
+              "bootable": "false",
+              "created_at": "2014-09-05T14:37:42.000000",
+              "device": "/dev/xvdb",
+              "display_description": null,
+              "display_name": "pypi.dfw.openstack.org/main01",
+              "human_id": null,
+              "id": "c6f5229c-1cc0-47c4-aab7-60db1f6cf8e8",
+              "metadata": {
+                "readonly": "False",
+                "storage-node": "1845027a-5e07-47a1-9572-3eea4716f726"
+              },
+              "os-vol-tenant-attr:tenant_id": "610275",
+              "size": 200,
+              "snapshot_id": null,
+              "source_volid": null,
+              "status": "in-use",
+              "volume_type": "SATA"
+            }
+          ]
+        }
+      },
+        </code></pre>
+    </section>
+        <section id="end">
+            <h1>Thanks!</h1>
+        </section>
+    </div>
+  </div>
+
+  <script src="lib/js/head.min.js"></script>
+  <script src="js/reveal.min.js"></script>
+  <script>
+      // Full list of configuration options available here:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+          controls: true,
+          progress: true,
+          history: true,
+          center: true,
+
+          theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+          transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+          // Optional libraries used to extend on reveal.js
+          dependencies: [
+              { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+              { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+              { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+              { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+              { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+              { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+              // { src: 'plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+              // { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+          ]
+      });
+  </script>
+</body>
+</html>

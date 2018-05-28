@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><diagram program="umlet" version="12.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>110</x>
+      <y>110</y>
+      <w>210</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>_class: PowerInterface_
+
+[required]
+--
+- get_power_state()
+- set_power_state()
+- reboot()
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>110</x>
+      <y>240</y>
+      <w>210</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>_class: DeployInterface_
+
+[required]
+--
+- prepare()
+- clean_up()
+- deploy()
+- tear_down()
+- take_over()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>370</x>
+      <y>110</y>
+      <w>240</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>_class: ManagementInterface_
+
+[optional]
+--
+- get_supported_boot_devices()
+- get_boot_device()
+- set_boot_device()
+- get_sensors_data()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>370</x>
+      <y>260</y>
+      <w>240</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>_class: ConsoleInterface_
+
+[optional]
+--
+- start_console()
+- stop_console()
+- get_console()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>370</x>
+      <y>390</y>
+      <w>240</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>_class: VendorInterface_
+[optional]
+--
+- validate()
+- driver_validate()
+--
+decorators:
+- @passthru
+- @driver_passthru</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>110</x>
+      <y>410</y>
+      <w>210</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>_class: BootInterface_
+
+[required]
+--
+- prepare_ramdisk()
+- clean_up_ramdisk()
+- prepare_instance()
+- clean_up_instance()</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>

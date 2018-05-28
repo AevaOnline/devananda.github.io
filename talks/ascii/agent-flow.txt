@@ -1,0 +1,30 @@
+Nova->API: set instance_info
+Nova->API: set provision_state
+API->Conductor: do_node_deploy()
+Conductor->Conductor: update pxe, tftp configs
+Conductor->Neutron: update DHCPBOOT
+Conductor->Node: power on
+Node->Neutron: DHCP request
+Neutron->Node: next-server = Conductor
+Node->Conductor: attempts tftpboot
+Conductor->Node: send agent kernel, ramdisk, & config
+Node->Node: runs agent ramdisk
+Node->API: lookup()
+API->Conductor: ...
+Conductor->Node: pass UUID
+Node->API: heartbeat(UUID)
+API->Conductor: heartbeat
+Conductor->Node: continue deploy: pass image, disk info
+
+alt Node downloads image, writes to disk
+    Node->API: hearbeats periodically
+    API->Conductor: ...
+    Conductor->Node: is deploy done yet?
+    Node->Conductor: still working...
+else When deploy is done
+    Conductor->Neutron: clear DHCPBOOT
+    Conductor->Node: set bootdev HDD
+    Conductor->Node: reboot
+end
+Node->Node: reboots into user instance
+

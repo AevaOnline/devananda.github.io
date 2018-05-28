@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>Getting Started</title>
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/improve-formatting.css">
+    <link rel="stylesheet" href="css/theme/black.css" id="theme">
+
+    <!-- For syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <!-- If the query includes 'print-pdf', include the PDF print sheet -->
+    <script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'css/print/pdf.css'
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+    </script>
+
+
+    <script src="js/jquery-1.7.2.min.js" charset="utf-8" type="text/javascript"></script>
+    <script src="js/raphael-min.js" type="text/javascript" charset="utf-8"></script>
+</head>
+
+<body>
+  <div class="reveal">
+    <!-- Any section element inside of this container is displayed as a slide -->
+    <div class="slides">
+        <section data-state="cover">
+            <h1><span xmlns:dct="http://purl.org/dc/terms/"
+                    href="http://purl.org/dc/dcmitype/InteractiveResource"
+                    property="dct:title"
+                    rel="dct:type">
+                Social Hacking with ML
+          </span></h1>
+          <br>
+          <h3 xmlns:cc="http://creativecommons.org/ns#"
+              property="cc:attributionName">Devananda van der Veen</h3>
+          <h3> twitter: @devananda </h3>
+          <br>
+          <h4><a xmlns:cc="http://creativecommons.org/ns#"
+                 rel="cc:attributionURL"
+                 href='http://devananda.github.io/talks/'>devananda.github.io/talks/</a> </h4>
+        </section>
+        <section id="who-am-i">
+            <h1>Trends...</h1>
+            <ul>
+                <li>1999 - "Peer to Peer" networking</li>
+                <li>2003 - LAMP stack</li>
+                <li>2008 - Cloud</li>
+                <li>2016 - Machine Learning</li>
+            </ul>
+        </section>
+        <section id="what-to-talk-about">
+            <img src="ml-trends.png">
+            <h1>Cloud vs Machine Learning</h1>
+        </section>
+        <section id='whatcanitdo'>
+          <h1>What can it do?</h1>
+        </section>
+        <section id="whatcanitdo2">
+            <img src="dogs_v_cats.jpg" width="500">
+        </section>
+        <section id="sowhat">
+            <h1>... and then what?</h1>
+        </section>
+        <section id="what-about-fire">
+            <h1>FireWise</h1>
+        </section>
+        <section id="what-about-data">
+        https://cloud.google.com/public-datasets/
+        </section>
+        <section id="what-about-money">
+            <h1>$?</h1>
+        </section>
+        <section id="what-about-time">
+            <h1>Get involved</h1>
+        </section>
+    </div>
+  </div>
+
+  <script src="lib/js/head.min.js"></script>
+  <script src="js/reveal.js"></script>
+  <script>
+      // Full list of configuration options available here:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+          controls: true,
+          progress: true,
+          history: true,
+          center: true,
+
+          theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+          transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+          // Optional libraries used to extend on reveal.js
+          dependencies: [
+              { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+              { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+              { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+              { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+              { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+              { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+              // { src: 'plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+              // { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+          ]
+      });
+  </script>
+</body>
+</html>

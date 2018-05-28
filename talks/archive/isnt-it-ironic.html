@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>Isn't it Ironic?</title>
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/openstack.css" id="theme">
+
+    <!-- For syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <!-- If the query includes 'print-pdf', include the PDF print sheet -->
+    <script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+    </script>
+
+
+    <script src="js/jquery-1.7.2.min.js" charset="utf-8" type="text/javascript"></script>
+    <script src="js/raphael-min.js" type="text/javascript" charset="utf-8"></script>
+</head>
+
+<body>
+  <div class="background">
+      <img alt="" id="head-icon" width="218" height="67"
+           src="images/openstack-cloud-software-horizontal-small.png" /></div>
+
+  <div class="reveal">
+    <!-- Any section element inside of this container is displayed as a slide -->
+    <div class="slides">
+        <section data-state="cover">
+            <h1><span xmlns:dct="http://purl.org/dc/terms/"
+                    href="http://purl.org/dc/dcmitype/InteractiveResource"
+                    property="dct:title"
+                    rel="dct:type">
+                Isn't it Ironic?
+          </span></h1>
+          <h2>Managing a bare metal cloud</h2>
+          <h3 xmlns:cc="http://creativecommons.org/ns#"
+              property="cc:attributionName">Devananda van der Veen</h3>
+          <h4><a xmlns:cc="http://creativecommons.org/ns#"
+                 rel="cc:attributionURL"
+                 href='http://github.com/devananda/talks/isnt-it-ironic.html'>http://github.com/devananda/talks/isnt-it-ironic.html</a> </h4>
+          <h3> twitter: @devananda </h3>
+        </section>
+        <section id="who-am-i">
+            <h1>Who am I</h1>
+            <ul>
+                <li>Master Engineer at HP</li>
+                <li>OpenStack Technical Committee</li>
+                <li>OpenStack Ironic PTL</li>
+            </ul>
+        </section>
+        <section id="what-to-talk-about">
+            <h1>What we're going to talk about</h1>
+            <ul>
+                <li>Virtualization & OpenStack</li>
+                <li>Ironic's architecture</li>
+                <li>Configuration choices you need to make</li>
+                <li>Operators <-> Developers</li>
+                <li>Walk through a deploy</li>
+                <li>Multitenancy</li>
+                <li>Some other cool stuff</li>
+            </ul>
+        </section>
+        <section id="why-virt">
+            <h1>Why is <i>virtualization</i> important?</h1>
+        </section>
+        <section id="operations-cycle">
+            <image src="images/operations-cycle.png" />
+        </section>
+        <section id="not-a-virt-layer">
+            <h1>"OpenStack is not a virtualization layer. It is an abstraction layer."</h1>
+            <h3>- Daniel Sabbah, CTO @ IBM</h3>
+        </section>
+
+        <section id="compute-1">
+            <h1>Compute Virtualization Drivers</h1>
+            <ul>(KVM, Xen, HyperV ...)<br><br>
+                <li>flexibility: dev controls their whole environment</li>
+                <li>isolation: guests don't share resources</li>
+                <li>... but noisy neighbors</li>
+            </ul>
+        </section>
+        <section id="compute-2">
+            <h1>Compute Containerization Drivers</h1>
+            <ul>(lxc, docker ...)<br><br>
+                <li>specificity: just your app, nothing more</li>
+                <li>density: far more instances per server</li>
+                <li>... but shared kernel, memory, and other resources</li>
+            </ul>
+        </section>
+        <section id="compute-3">
+            <h1>Compute Physicalization Drivers</h1>
+            <ul>(Ironic)<br><br>
+                <li>raw performance</li>
+                <li>non-virtualizable workloads (eg, GPUs)</li>
+                <li>... but no hypervisor</li>
+            </ul>
+        </section>
+        <section id="ironic">
+            <h1>Ironic is:</h1>
+            <ul>
+                <li class="fragment">An OpenStack service</li>
+                <li class="fragment">A Nova driver</li>
+                <li class="fragment">also capable of being used stand-alone</li>
+            </ul>
+        </section>
+        <section id="ironic2">
+            <h1>Use cases:</h1>
+            <ul>
+                <li class="fragment">A component of your application does not perform well inside a VM</li>
+                <li class="fragment">Your application requires direct access to specialized hardware (eg, GPU)</li>
+                <li class="fragment">You provide and manage infrastructure for others, and want to improve your automation</li>
+            </ul>
+        </section>
+        <section id="design-goals">
+            <h1>Design Goals</h1>
+            <ul>
+                <li class="fragment">Be resilient to hardware and service failures</li>
+                <li class="fragment">Predictable and horizontal scale-out</li>
+                <li class="fragment">Common API across hardware vendors</li>
+                <li class="fragment">Common API for both virtual and physical resources</li>
+            </ul>
+        </section>
+        <section id="components">
+            <h1>Key Components</h1>
+            <ul>
+                <li><b>ironic-api: </b>RESTful API service</li>
+                <li><b>ironic-conductor: </b>interacts directly with hardware; asynchronous handling of both requested and periodic actions.</li>
+                <li><b>deploy ramdisk: </b>temporary agent, booted on machines, to provide remote access to hardware for provisioning and management.</li>
+                <li><b>Nova driver: </b>interface for Nova; enables OpenStack to provide common abstraction for virtual and physical machines.</li>
+                <li><b><i>discoverd ramdisk: </i></b>optional tool for hardware inventory management</li>
+            </ul>
+        </section>
+        <section id="addl-components">
+            <img src="images/deployment_architecture_2.png" />
+        </section>
+        <section id="technologies">
+            <h1>Key Technologies</h1>
+            <ul>
+                <li><b>PXE: </b>pre-boot execution environment, allows host to boot from network</li>
+                <li><b>DHCP: </b>dynamic host configuration protocol, used to locate the NBP on the network,
+                    and provide the host OS with IP address during init</li>
+                <li><b>IPMI: </b>intelligent platform management interface,
+                    for remote control of machine power state, boot device, serial console, etc.</li>
+                <li><b>TFTP: </b>trivial file transfer protocol, copies the NBP over the network</li>
+                <li><b>iSCSI: </b>used to remotely attach to HDD and copy the machine image</li>
+            </ul>
+        </section>
+        <section id="more-technologies">
+            <h1>But you have options...</h1>
+            <ul>
+                <li><b>! PXE: </b>use virtual media channel instead of PXE. Requires Swift; available in Kilo; limited to "ilo" drivers.</li>
+                <li><b>! DHCP: </b>static IP injection is possible, but not really suitable for larger or dynamic environments</li>
+                <li><b>! IPMI: </b><i>many</i> other out-of-band power management tools supported</li>
+                <li><b>! TFTP: </b>iPXE / HTTP(S) supported, too</li>
+                <li><b>! iSCSI: </b>image can be fetched directly by "agent" drivers</li>
+            </ul>
+        </section>
+        <section id="and-options">
+            <h1>... and options ...</h1>
+            <ul>
+                <li><b>Homogeneous hardware?</b>
+                    <br>Easy!</li>
+                <li><b>Heterogeneous hardware?</b>
+                    <br>Use nova-scheduler to match flavors to node.properties</li>
+                <li><b>Single tenant / small deployment?</b>
+                    <br>Flat network. Maybe use Ironic stand-alone</li>
+                <li><b>Service provider for multiple tenants?</b>
+                    <br>Use keystone for auth, nova for quota management, ...
+                    <br>Basically, use OpenStack</li>
+                <li><b>Untrusted tenants?</b>
+                    <br>Network isolation is possible (but not trivial) via Neutron
+                    <br>Secure-erase disks, flash firmware between each use</li>
+            </ul>
+        </section>
+        <section id="operators-and-users">
+            <h1>Operators <-> Developers</h1>
+        </section>
+        <section id="layers">
+            <img src="images/ironic-nova-layer.jpg" />
+        </section>
+        <section id="examples">
+            <h1>Examples</h1>
+        </section>
+        <section id="ex-enroll">
+            <h1>Enroll Hardware</h1>
+            <pre><code class="fragment">$ ironic node-create -d agent_ipmitool \
+  -i ipmi_username=admin -i ipmi_password=fake -i ipmi_address=10.1.2.3 \
+  -p cpus=4 -p memory_mb=8192 -p local_gb=500 \
+  -e note='spare server' -n mytest
++--------------+-------------------------------------------------------------+
+| Property     | Value                                                       |
++--------------+-------------------------------------------------------------+
+| chassis_uuid | None                                                        |
+| driver       | agent_ipmitool                                              |
+| driver_info  | {u'ipmi_address': u'10.1.2.3', u'ipmi_username': u'admin',  |
+|              | u'ipmi_password': u'******'}                                |
+| extra        | {u'note': u'spare server'}                                  |
+| properties   | {u'memory_mb': u'8192', u'local_gb': u'500', u'cpus': u'4'} |
+| uuid         | 7a1ce8d0-9679-4d87-8f54-b11f6e8adb8f                        |
+| name         | mytest                                                      |
++--------------+-------------------------------------------------------------+
+            </code><code class="fragment">$ ironic port-create -n 7a1ce8d0-9679-4d87-8f54-b11f6e8adb8f -a 00:11:22:00:11:22
++-----------+--------------------------------------+
+| Property  | Value                                |
++-----------+--------------------------------------+
+| node_uuid | 7a1ce8d0-9679-4d87-8f54-b11f6e8adb8f |
+| extra     | {}                                   |
+| uuid      | 024e52b2-6ae4-483b-a039-d6afae7f6a22 |
+| address   | 00:11:22:00:11:22                    |
++-----------+--------------------------------------+</code>
+            </pre>
+        </section>
+        <section id="ex-validate">
+            <h1>Validate provided info</h1>
+            <pre><code class="fragment">$ ironic node-validate 7a1ce8d0-9679-4d87-8f54-b11f6e8adb8f
++------------+--------+--------------------------------------------------------------
+| Interface  | Result | Reason
++------------+--------+--------------------------------------------------------------
+| console    | False  | Missing 'ipmi_terminal_port' parameter in node's driver_info.
+| deploy     | False  | Node 7a1ce8d0-9679-4d87-8f54-b11f6e8adb8f failed to validate
+deploy image info. Some parameters were missing. Missing are:
+['driver_info.deploy_kernel', 'driver_info.deploy_ramdisk', 'instance_info.image_source'] |
+| inspect    | None   | not supported
+| management | True   |
+| power      | True   |
++------------+--------+--------------------------------------------------------------</code></pre>
+        </section>
+        <section id="oops">
+            <h1>Oops</h1>
+            (I forgot a few options)
+        </section>
+        <section id="add-driver-info">
+            <h1>Add or change options</h1>
+            <pre><code>$ ironic node-update mytest add \
+    instance_info/image_source=http://192.168.1.1/myimage.qcow2 \
+    instance_info/image_checksum=e1d99d6d0ef2144a8d672b0420c547b5
+
+$ ironic node-update mytest add \
+    driver_info/deploy_ramdisk=http://192.168.1.1/deploy.initrd \
+    driver_info/deploy_kernel=http://192.168.1.1/deploy.vmlinuz
+
+$ ironic node-update mytest replace extra/note='database' name=db01.example
++------------------------+-------------------------------------------------
+| Property               | Value
++------------------------+-------------------------------------------------
+| extra                  | {u'note': u'database'}
+| name                   | db01.example
+            </code></pre>
+        </section>
+        <section id="ex-validate2">
+            <h1>Validate info (again)</h1>
+            <pre><code>$ ironic node-validate db01.example
++------------+--------+---------------------------------------------------------------+
+| Interface  | Result | Reason                                                        |
++------------+--------+---------------------------------------------------------------+
+| console    | False  | Missing 'ipmi_terminal_port' parameter in node's driver_info. |
+| deploy     | True   |                                                               |
+| inspect    | None   | not supported                                                 |
+| management | True   |                                                               |
+| power      | True   |                                                               |
++------------+--------+---------------------------------------------------------------+</code></pre>
+        </section>
+        <section id="node-show">
+            <h1>Show details</h1>
+            <pre><code>$ ironic node-show db01.example
++------------------------+------------------------------------------------------------
+| Property               | Value
++------------------------+------------------------------------------------------------
+| target_power_state     | None
+| last_error             |
+| maintenance_reason     |
+| provision_state        | available
+| console_enabled        | False
+| target_provision_state | None
+| maintenance            | False
+| power_state            | power off
+| driver                 | agent_ipmitool
+| reservation            | None
+| instance_uuid          | None
+| driver_internal_info   | {}
+| chassis_uuid           |    </code></pre>
+        </section>
+        <section id="maintenance">
+            <h1>Maintenance Mode</h1>
+            <pre><code class="fragment">$ ironic node-set-maintenance --reason 'replacing disks' db01.example true
+$ ironic node-show db01.example
++------------------------+------------------------------------------------------------
+| Property               | Value
++------------------------+------------------------------------------------------------
+| target_power_state     | None
+| last_error             |
+| maintenance_reason     | replacing disks
+| provision_state        | available
+| console_enabled        | False
+| target_provision_state | None
+| maintenance            | True
+| power_state            | power off
+| instance_uuid          | None
+| driver_internal_info   | {}   </code></pre>
+        </section>
+        <section id="power-sync">
+            <h1>Power Status Loop</h1>
+            <pre><code class="fragment">$ ironic node-show my.broken.node
++-----------------+----------------------------------------------------------------------+
+| Property        | Value                                                                |
++-----------------+----------------------------------------------------------------------+
+| last_error      | During sync_power_state, max retries exceeded for node               |
+|                 | 9729f0b2-b270-4d06-aa87-40f2b2cad6ee, node state None does not match |
+|                 | expected state 'off'. Updating DB state to 'None' Switching node to  |
+|                 | maintenance mode.                                                    |</code>
+<code class="fragment">$ cat /var/log/upstart/ironic-conductor.log
+2015-03-24 04:29:19.349 26317 WARNING ironic.conductor.manager [-]
+During sync_power_state, could not get power state for node 9729f0b2-b270-4d06-aa87-40f2b2cad6ee.
+Error: IPMI call failed: power status.</code></pre>
+        </section>
+        <section id="deploy-1">
+            <h1>Deployment (via Ironic)</h1>
+            <pre><code class="fragment">$ ironic node-set-provision-state db01.example active
+
+The provisioning operation can't be performed on node
+7a1ce8d0-9679-4d87-8f54-b11f6e8adb8f because it's in maintenance mode.
+</code><code class="fragment">$ ironic node-set-maintenance db01.example false
+$ ironic node-set-provision-state db01.example active
+$
+# ... time goes on ...</code>
+</pre>
+        </section>
+        <section id="deploy-2">
+            <h1>Deployment (via Ironic)</h1>
+                <pre><code>$ ironic node-show db01.example
++------------------------+-------------------------------------
+| Property               | Value
++------------------------+-------------------------------------
+| target_power_state     | None
+| last_error             |
+| maintenance_reason     | None
+| provision_state        | active
+| console_enabled        | False
+| target_provision_state | None
+| maintenance            | False
+| power_state            | power on
+| instance_uuid          | None
+| driver_internal_info   | {}    </code></pre>
+        </section>
+        <section id="deploy-3">
+            <h1>Deployment (via Nova)</h1>
+            <pre><code class="fragment">$ nova boot –flavor baremetal -image myimage -key-name my_ssh_key ...
+
+$ tail -f /var/log/upsart/nova-compute.log
+...
+2014-05-01 03:47:05.878 AUDIT nova.compute.resource_tracker [-] Free ram (MB): 8192
+2014-05-01 03:47:05.878 AUDIT nova.compute.resource_tracker [-] Free disk (GB): 500
+2014-05-01 03:47:05.878 AUDIT nova.compute.resource_tracker [-] Free VCPUS: 4
+
+...
+2014-05-01 03:47:05.878 AUDIT nova.compute.resource_tracker [-] Free ram (MB): 0
+2014-05-01 03:47:05.878 AUDIT nova.compute.resource_tracker [-] Free disk (GB): 0
+2014-05-01 03:47:05.878 AUDIT nova.compute.resource_tracker [-] Free VCPUS: 0</code></pre>
+        </section>
+        <section id="deploy-process">
+            <h1>Two methods for image deployment</h1>
+            <table >
+                <tr>
+                    <th>Direct from source</th>
+                    <th> || </th>
+                    <th>Cache on conductor</th>
+                </tr>
+                <tr>
+                    <td valign="top"><ul>
+                        <li>agent_ipmitool</li>
+                        <li>agent_pyghmi</li>
+                        <li>agent_ilo</li>
+                    </ul></td>
+                    <td></td>
+                    <td><ul>
+                        <li>pxe_ipmitool</li>
+                        <li>pxe_ipminative</li>
+                        <li>pxe_seamicro</li>
+                        <li>pxe_iboot</li>
+                        <li>pxe_ilo</li>
+                        <li>pxe_snmp</li>
+                        <li>pxe_drac</li>
+                        <li>pxe_irmc</li>
+                        <li>pxe_amt</li>
+                        <li>iscsi_ilo</li>
+                    </ul></td>
+                </tr>
+                </table>
+        </section>
+        <section id="pxe-1">
+            <h1>PXE Deploy Process</h1>
+            <img src="images/pxe-deploy-1.png" />
+        </section>
+        <section id="pxe-2">
+            <h1>PXE Deploy Process (cont)</h1>
+            <img src="images/pxe-deploy-2.png" />
+        </section>
+        <section id="agent-1">
+            <h1>Agent Deploy Process</h1>
+            <img src="images/agent-deploy-1.png" />
+        </section>
+        <section id="agent-2">
+            <h1>Agent Deploy Process (cont)</h1>
+            <img src="images/agent-deploy-2.png" />
+        </section>
+        <section id="HA">
+            <h1>Fault Tolerance</h1>
+            (there's a hash ring)
+            <ul>
+                <li class="fragment">Each node is mapped across the set of conductors which have
+                    enabled that node's driver, using a consistent hash ring.</li>
+                <li class="fragment">Starting or stopping a conductor will initiate a rebalance.</li>
+                <li class="fragment">Periodic task ensures consistent local state for mapped nodes.</li>
+                <li class="fragment">No impact to running instances, but may disrupt reboots (if nodes netboot)</li>
+            </ul>
+        </section>
+        <section id="HA1">
+            <h1>Example</h1>
+            <pre><code class="fragment">$ ironic driver-list
++---------------------+----------------+
+| Supported driver(s) | Active host(s) |
++---------------------+----------------+
+| agent_ilo           | cdr-A          |  << all the ilo nodes go here
+| agent_ipmitool      | cdr-A,cdr-B    |  << ipmi nodes are split 50/50
++---------------------+----------------+</code></pre>
+        </section>
+        <section id="HA2">
+            <h1>What happens when I stop cdr-B?</h1>
+            <pre><code class="fragment">$ ironic driver-list
++---------------------+----------------+
+| Supported driver(s) | Active host(s) |
++---------------------+----------------+
+| agent_ilo           | cdr-A          |  << conductor "A" is now managing
+| agent_ipmitool      | cdr-A          |  << 100% of all my nodes
++---------------------+----------------+</code></pre>
+            <h1 class="fragment">Actually, I was just migrating to cdr-C</h1>
+            <pre><code class="fragment">$ ironic driver-list
++---------------------+----------------+
+| Supported driver(s) | Active host(s) |
++---------------------+----------------+
+| agent_ilo           | cdr-A,cdr-C    |  << both ilo & ipmi nodes are
+| agent_ipmitool      | cdr-A,cdr-C    |  << shared evenly across conductors
++---------------------+----------------+</code></pre>
+        </section>
+        <section id="ephemeral">
+            <h1>Is there a command to view the mapping?</h1>
+            <div class="fragment">Nope. It's dynamically generated as the cluster changes.</div>
+        </section>
+        <section id="end">
+            <h1>Thanks!</h1>
+        </section>
+    </div>
+  </div>
+
+  <script src="lib/js/head.min.js"></script>
+  <script src="js/reveal.min.js"></script>
+  <script>
+      // Full list of configuration options available here:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+          controls: true,
+          progress: true,
+          history: true,
+          center: true,
+
+          theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+          transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+          // Optional libraries used to extend on reveal.js
+          dependencies: [
+              { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+              { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+              { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+              { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+              { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+              { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+              // { src: 'plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+              // { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+          ]
+      });
+  </script>
+</body>
+</html>

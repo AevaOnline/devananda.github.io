@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>Evolution of an Ansible project</title>
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/improve-formatting.css">
+    <link rel="stylesheet" href="css/theme/openstack.css" id="theme">
+
+    <!-- For syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <!-- If the query includes 'print-pdf', include the PDF print sheet -->
+    <script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+    </script>
+
+
+    <script src="js/jquery-1.7.2.min.js" charset="utf-8" type="text/javascript"></script>
+    <script src="js/raphael-min.js" type="text/javascript" charset="utf-8"></script>
+</head>
+
+<body>
+  <div class="background">
+      <img alt="" id="head-icon" width="218" height="67"
+           src="images/openstack-cloud-software-horizontal-small.png" /></div>
+
+  <div class="reveal">
+    <!-- Any section element inside of this container is displayed as a slide -->
+    <div class="slides">
+        <section data-state="cover">
+            <h1><span xmlns:dct="http://purl.org/dc/terms/"
+                    href="http://purl.org/dc/dcmitype/InteractiveResource"
+                    property="dct:title"
+                    rel="dct:type">
+                Evolution of an Ansible project
+          </span></h1>
+          <h2>Bifrost: putting a REST API on your hardware</h2>
+          <h3 xmlns:cc="http://creativecommons.org/ns#"
+              property="cc:attributionName">Devananda van der Veen</h3>
+          <h3> twitter: @devananda </h3>
+          <h4><a xmlns:cc="http://creativecommons.org/ns#"
+                 rel="cc:attributionURL"
+                 href='http://github.com/devananda/talks/isnt-it-ironic.html'>http://github.com/devananda/talks/ansible-evolution-bifrost.html</a> </h4>
+        </section>
+        <section id="who-am-i">
+            <h1>Who am I</h1>
+            <ul>
+                <li>Master Engineer at HP</li>
+                <li>OpenStack Technical Committee</li>
+                <li>OpenStack Ironic PTL</li>
+            </ul>
+        </section>
+        <section id="what-to-talk-about">
+            <h1>What we're going to talk about</h1>
+            <ul>
+                <li>What is Ironic</li>
+                <li>What is Bifrost</li>
+                <li>First stab</li>
+                <li>Organizing it</li>
+                <li>What it looks like now</li>
+            </ul>
+        </section>
+        <section id="not-a-virt-layer">
+            <h1>"OpenStack is not a virtualization layer. It is an abstraction layer."</h1>
+            <h3>- Daniel Sabbah, CTO @ IBM</h3>
+        </section>
+        <section id="ironic">
+            <h1>Ironic is:</h1>
+            <ul>
+                <li class="fragment">An OpenStack service</li>
+                <li class="fragment">A Nova driver</li>
+                <li class="fragment">also capable of being used stand-alone</li>
+            </ul>
+        </section>
+        <section id="components">
+            <h1>Key Components</h1>
+            <ul>
+                <li class="fragment"><b>ironic-api: </b>RESTful API service</li>
+                <li class="fragment"><b>ironic-conductor: </b>interacts directly with hardware; asynchronous handling of both requested and periodic actions.</li>
+                <li class="fragment"><b>deploy ramdisk: </b>temporary agent, booted on machines, to provide remote access to hardware for provisioning and management.</li>
+                <li class="fragment"><b>Nova driver: </b>interface for Nova; enables OpenStack to provide common abstraction for virtual and physical machines.
+                    <div class="fragment"><i>(but for this talk, we don't care about Nova)</i></div></li>
+            </ul>
+        </section>
+        <section id="technologies">
+            <h1>Key Technologies</h1>
+            <ul>
+                <li class="fragment"><b>PXE: </b>pre-boot execution environment, allows host to boot from network</li>
+                <li class="fragment"><b>DHCP: </b>dynamic host configuration protocol, used to locate the NBP on the network,
+                    and provide the host OS with IP address during init</li>
+                <li class="fragment"><b>IPMI: </b>intelligent platform management interface,
+                    for remote control of machine power state, boot device, serial console, etc.</li>
+                <li class="fragment"><b>TFTP: </b>trivial file transfer protocol, copies the NBP over the network</li>
+                <li class="fragment"><b>HTTP(S): </b>you know what this is ...</li>
+            </ul>
+        </section>
+
+        <section id="bifrost">
+            <h1>Project Bifrost</h1>
+            <div class="fragment"><h2>Ansible + Ironic</h2>
+            <a href="https://github.com/juliakreger/bifrost">https://github.com/juliakreger/bifrost</a></div><br>
+            <div class="fragment"><h3>(preparing for submission to OpenStack)</h3></div>
+        </section>
+        <section id="thatsit">
+            <h1>And. That's. It.</h1>
+        </section>
+        <section id="why-new">
+            <h1>OpenStack is great</h1>
+            Why aren't you using Nova/Glance/Keystone/etc?
+        </section>
+        <section id="complex">
+            <h1>OpenStack is very complex</h1>
+            Sometimes, that complexity isn't necessary.
+        </section>
+        <section id="newpxe">
+            <h1>Is this just a new PXE toolchain?</h1>
+            Sort of, but not exactly, and anyway...
+        </section>
+        <section id="bifrost2">
+            <h1>But I already have a PXE toolchain!!!</h1>
+            Great. Use that if you like.<br>
+            Also, this talk is about Ansible, not Ironic :)
+        </section>
+        <section id="beginning">
+            <h1>In the beginning of Bifrost...</h1>
+            <pre><code>inventory/localhost
+inventory/groupvars/all.yaml
+
+setup/env-vars
+setup/env-setup.sh
+setup/install.yaml
+
+enroll/baremetal.csv
+enroll/enroll.yaml
+
+deploy/setup_nodes.yaml
+deploy/configdrive.yaml
+deploy/deploy.yaml
+            </code></pre>
+        </section>
+        <section id="run-beginning">
+            <h1>Running it looked something like this...</h1>
+            <pre><code>$ cd setup && bash ./env-setup.sh
+
+$ source /opt/stack/ansible/hacking/env-setup
+
+$ ansible-playbook -vvvv -i ../inventory/localhost ./install.yaml
+$ ansible-playbook -i ../inventory/localhost -vvvv enroll.yaml \
+    -e baremetal_csv_file=./baremetal.csv
+$ ansible-playbook -i ../inventory/localhost -vvvv deploy.yaml \
+    -e baremetal_csv_file=../enroll/baremetal.csv
+            </code></pre>
+        </section>
+        <section id="caveat1">
+            <h1>Warning: this is old code...</h1>
+        </section>
+        <section id="install">
+            <h1>install.yaml</h1>
+            <pre  class="stretch"><code>---
+- hosts: localhost
+  connection: local
+  name: "Install services required for ironic"
+  sudo: yes
+  gather_facts: yes
+  tasks:
+    - name: "Update Package Cache"
+      local_action: apt update_cache=yes
+    - name: "Install packages"
+      local_action: apt name={{ item }}
+      with_items:
+        - mysql-server
+        - dnsmasq
+        - rabbitmq-server
+    - name: "Install 14.10 packages"
+      local_action: apt name={{ item }}
+      with_items:
+        - pxelinux
+      when: ansible_distribution_version|version_compare('14.10', '>=')
+    - name: "Downloading Ironic"
+      local_action: command git clone https://git.openstack.org/openstack/ironic chdir=/opt/stack creates=/opt/stack/ironic
+    # TODO: Remove eventually once the features land.
+    - name: "Ironic - checking out master branch"
+      local_action: command git checkout -f master chdir=/opt/stack/ironic
+    - name: "Ironic - resetting master branch"
+      local_action: command git reset --hard master chdir=/opt/stack/ironic
+    - name: "Ironic - resyncing to current master branch"
+      local_action: command git pull --ff-only chdir=/opt/stack/ironic/
+    - name: "python-ironicclient - Retrieving library from git.openstack.org"
+      local_action: command git clone https://review.openstack.org/openstack/python-ironicclient chdir=/opt/stack creates=/opt/stack/python-ironicclient
+    # some more patching here
+    - name: "Shade - Retrieving library from git.openstack.org"
+      local_action: command git clone https://review.openstack.org/openstack-infra/shade chdir=/opt/stack creates=/opt/stack/shade
+    # yup. more patching here.
+            </code></pre>
+        </section>
+        <section id="shade">
+            <h1>Shade? What's that?</h1><br>
+<h2>"Shade is a simple client library for operating OpenStack clouds. The
+key word here is *simple*. Clouds can do many many many things - but
+there are probably only about 10 of them that most people care about
+with any regularity."</h2><br>
+            <a href="http://github.com/openstack-infra/shade">http://github.com/openstack-infra/shade</a>
+        </section>
+        <section id="more-install">
+            <h1>Getting back to that install script...</h1>
+            <pre><code>    - name: "Starting MySQL"
+      local_action: service name=mysql state=started
+    - name: "Starting rabbitmq-server"
+      local_action: service name=rabbitmq-server state=started
+    - name: "RabbitMQ - Testing if hostname is defined firsts in /etc/hosts"
+      local_action: command grep -i "127.0.0.1*.{{ ansible_hostname }}\ localhost" /etc/hosts
+      ignore_errors: yes
+      register: test_grep_fix_hostname
+    - name: "RabbitMQ - Fixing /etc/hosts"
+      local_action: command sed -i 's/localhost/{{ ansible_hostname }} localhost/' /etc/hosts
+      when: test_grep_fix_hostname.rc != 0
+    - name: "Ensuring guest user is removed from rabbitmq"
+      local_action: rabbitmq_user user=guest state=absent force=yes
+    - name: "Creating Ironic user in RabbitMQ"
+      local_action: rabbitmq_user user=ironic password={{ ironic_db_password }} force=yes state=present configure_priv=.* write_priv=.* read_priv=.*
+      no_log: true
+    - name: "MySQL - Creating DB"
+      local_action: mysql_db login_user=root login_password={{ mysql_password }} name=ironic state=present encoding=utf8
+      register: test_created_db
+      no_log: True
+    - name: "MySQL - Creating user for Ironic"
+      local_action: mysql_user login_user=root login_password={{ mysql_password }} name=ironic password={{ ironic_db_password }} priv=ironic.*:ALL state=present
+      no_log: True
+    - name: "Install Ironic using pip"
+      local_action: pip name=/opt/stack/ironic state=latest
+    - name: "Ensure /etc/ironic exists"
+      local_action: file name=/etc/ironic state=directory
+    - name: "Place Ironic Config file"
+      local_action: template src=templates/ironic.conf.j2 dest=/etc/ironic/ironic.conf
+    - name: "Copy policy.json to /etc/ironic"
+      local_action: copy src=/opt/stack/ironic/etc/ironic/policy.json dest=/etc/ironic/
+    - name: "Creating Ironic DB Schema"
+      local_action: command ironic-dbsync --config-file /etc/ironic/ironic.conf create_schema
+      when: test_created_db.changed == true
+    - name: "Upgrading Ironic DB Schema"
+      local_action: command ironic-dbsync --config-file /etc/ironic/ironic.conf upgrade
+      when: test_created_db.changed == false
+    - name: "Creating an ironic service group"
+      local_action: group name=ironic
+    - name: "Creating an ironic service user"
+      local_action: user name=ironic group=ironic
+    - name: "Placing services"
+      local_action: template src=templates/init_template.j2 dest=/etc/init/{{item.service_name}}.conf owner=root group=root
+      with_items:
+        - { service_name: 'ironic-api', username: 'ironic', args: '--config-file /etc/ironic/ironic.conf'}
+        - { service_name: 'ironic-conductor', username: 'ironic', args: '--config-file /etc/ironic/ironic.conf'}
+    - name: "Start ironic-conductor"
+      local_action: service name=ironic-conductor state=started
+    - name: "Start ironic-api"
+      local_action: service name=ironic-api state=started
+    - name: "Start ironic-conductor"
+      local_action: service name=ironic-conductor state=restarted
+    - name: "Start ironic-api"
+      local_action: service name=ironic-api state=reloaded</pre></code>
+        </section>
+        <section id="long">
+            <h1>OMG. Does it ever end?</h1>
+            <pre><code>- name: "Setting up PXE and iPXE folders"
+      local_action: file name={{item}} owner=ironic group=ironic state=directory
+      with_items:
+        - /tftpboot
+        - /tftpboot/pxelinux.cfg
+        - "{{ http_boot_folder }}"
+    - name: "Placing pxelinux.0 (pre-14.10)"
+      local_action: copy src=/usr/lib/syslinux/pxelinux.0 dest=/tftpboot
+      when: ansible_distribution_version|version_compare('14.10', '<')
+    - name: "Placing pxelinux.0 (>=14.10)"
+      local_action: copy src=/usr/lib/PXELINUX/pxelinux.0 dest=/tftpboot
+      when: ansible_distribution_version|version_compare('14.10', '>=')
+    - name: "Place tftp config file"
+      local_action: copy src=files/xinetd.tftp dest=/etc/xinetd.d/tftp
+    - name: "Copy iPXE image into place"
+      local_action: copy src=/usr/lib/ipxe/undionly.kpxe dest=/tftpboot/
+    - name: "Deploy dnsmasq configuration file"
+      local_action: template src=templates/dnsmasq.conf.j2 dest=/etc/dnsmasq.conf
+    - name: "Deploying nginx configuraiton file for serving HTTP requests"
+      local_action: template src=templates/nginx.conf.j2 dest=/etc/nginx/nginx.conf
+    - name: "Ensuring dnsmasq is running"
+      local_action: service name={{ item }} state=started
+      with_items:
+        - xinetd
+        - dnsmasq
+        - nginx
+    - name: "Sending services a reload signal"
+      local_action: service name={{ item }} state=reloaded
+      with_items:
+        - xinetd
+        - nginx
+    - name: "Sending services a force-reload signal"
+      local_action: command /etc/init.d/dnsmasq force-reload</code></pre>
+        </section>
+        <section id="wait">
+            <h1>Whoa. That's <b>a lot</b> of different things.</h1>
+            <br>
+            <div class="fragment">Yup. And it basically just worked.</div>
+            <div class="fragment">Even when run repeatedly.</div>
+        </section>
+        <section id="idempotent">
+            <h1>Lesson 1: </h1>
+            <h1>Ansible is pretty good at being idempotent</h1>
+            <div class="fragment">(at least it can be, if used well)</div>
+        </section>
+        <section id="fetch">
+            <h1>Oh, and install.yaml fetches images, too</h1>
+            <pre><code>- hosts: localhost
+  connection: local
+  name: "Retrieve Images"
+  sudo: yes
+  gather_facts: yes
+  tasks:
+    # Similar logic to below can be utilized to retrieve files
+    - name: "Determine if folder exists, else create and populate folder."
+      local_action: stat path=/tftpboot/master_images
+      register: test_master_images
+    - name: "Create master_images folder"
+      local_action: file name=/tftpboot/master_images state=directory
+      when: test_master_images.stat.exists == false
+    # This is overly complex, however get_url will always re-retrieve the file
+    # if it already exists, and this is to prevent that behavior.
+    - name: "Test if CoreOS kernel is present"
+      local_action: stat path={{ http_boot_folder }}/coreos_production_pxe.vmlinuz
+      register: test_core_os_kernel_present
+    - name: "Download CoreOS kernel"
+      local_action: get_url url=http://tarballs.openstack.org/ironic-python-agent/coreos/files/coreos_production_pxe.vmlinuz dest={{ http_boot_folder }}/coreos_production_pxe.vmlinuz
+      when: test_core_os_kernel_present.stat.exists == false
+    - name: "Test if CoreOS image is present"
+      local_action: stat path={{ http_boot_folder }}/coreos_production_pxe_image-oem.cpio.gz
+      register: test_core_os_image_present
+    - name: "Download CoreOS image"
+      local_action: get_url url=http://tarballs.openstack.org/ironic-python-agent/coreos/files/coreos_production_pxe_image-oem.cpio.gz dest={{ http_boot_folder }}/coreos_production_pxe_image-oem.cpio.gz
+      when: test_core_os_image_present.stat.exists == false
+    - name: "Test if Ubuntu 14.04 server cloud amd64 is present"
+      local_action: stat path={{ deploy_image }}
+      register: test_os_image_present
+    - name: "Download CoreOS image"
+      local_action: get_url url=http://cloud-images.ubuntu.com/releases/trusty/release/ubuntu-14.04-server-cloudimg-amd64.tar.gz dest={{ deploy_image }}
+      when: test_os_image_present.stat.exists == false</code></pre>
+        </section>
+        <section id="phew">
+            <h1>That's a lot for one file to do.</h1>
+            Let's move on, for now.
+        </section>
+        <section id="enroll">
+            <h1>enroll.yaml</h1>
+            <pre><code>---
+- hosts: localhost
+  connection: local
+  name: "Enroll hardware from baremetal.csv into Ironic"
+  sudo: yes
+  gather_facts: yes
+  # Todo: Rip vars out, refactor.
+  tasks:
+    - name: "Error if variable baremetal_csv_file is not defined"
+      local_action: fail msg="baremetal_csv_file must be defined for this playbook to execute, please pass option '-e baremetal_csv_file=<path/to/file>'"
+      when: baremetal_csv_file is not defined
+    - name: "Validate that CSV file exists"
+      local_action: stat path={{ baremetal_csv_file }}
+      register: test_baremetal_csv_file
+    - name: "Error if file does not exist."
+      local_action: fail msg="The variable defined for baremetal_csv_file is not to a file.  Please define a file and try again."
+      when: test_baremetal_csv_file.stat.isreg == false
+    - name: "If no ipmi_bridging value set, or a value of no exists, execute standard sequence."
+      include: standard_enroll.yaml
+      when: ipmi_bridging is not defined or ipmi_bridging == "no"
+    - name: "If ipmi_bridging is set to single, execute single bridge enrollment sequence.."
+      include: ipmi_bridging_single_enroll.yaml
+      when: ipmi_bridging is defined and ipmi_bridging == "single"
+    - name: "If ipmi_bridging is set to single, execute dual bridge enrollment sequence.."
+      include: ipmi_bridging_dual_enroll.yaml
+      when: ipmi_bridging is defined and ipmi_bridging == "dual"
+</code></pre>
+        </section>
+        <section id="lesson2">
+            <h1>Lesson 2:</h1>
+            <h1>decision trees are possible</h1>
+            (but a bit hard to read)
+        </section>
+        <section id="setup">
+            <h1>setup_nodes.yaml</h1>
+            <pre><code>---
+- name: "Enroll Hardware"
+  # TODO: Conceptual idea of structure, needs image_source corrected and
+  # disk format clarified
+  os_ironic_node:
+    auth_plugin: None
+    auth: None
+    ironic_url: "{{ ironic_url }}"
+    uuid: "{{item.split(',')[9]}}"
+    state: present
+    config_drive: "http://{{ hostvars[inventory_hostname]['ansible_' + network_interface]['ipv4']['address'] }}:8080/{{item.split(',')[9]}}-configdrive.iso"
+    instance_info:
+      image_source: "http://{{ hostvars[inventory_hostname]['ansible_' + network_interface]['ipv4']['address'] }}:8080/{{deploy_image_filename}}"
+      image_checksum: "{{ test_deploy_image.stat.md5 }}"
+      image_disk_format: "qcow"
+      root_gb: 10
+  delegate_to: localhost
+  with_lines:
+    - cat {{ baremetal_csv_file }}
+</code></pre>
+        </section>
+        <section id="os-ironic-node">
+            <h1>What's that "os_ironic_node" thing?</h1>
+            <div class="fragment">New Ansible modules under development</div>
+            <div class="fragment">Uses Shade to simplify interacting with Ironic<br>
+            <a href="https://github.com/juliakreger/ansible-modules-extras/blob/features/new-openstack/cloud/">
+                https://github.com/juliakreger/ansible-modules-extras/blob/features/new-openstack/cloud/</a></div>
+        </section>
+        <section id="deploy">
+            <h1>deploy.yaml</h1>
+            <pre><code>---
+- hosts: localhost
+  connection: local
+  name: "Enroll hardware from baremetal.csv into Ironic"
+  sudo: yes
+  gather_facts: yes
+  # Todo: Rip vars out, refactor.
+  tasks:
+    # snipped out error checking
+    # also, snipped out fact gathering
+    - name: "Enroll nodes in Ironic"
+      include: setup_nodes.yaml
+            </code></pre>
+        </section>
+        <section id="lesson3">
+            <h1>Lesson 3:</h1>
+            <h1>code repetition is a sign</h1>
+            (it's probably time to refactor)
+        </section>
+        <section id="timeflies">
+            <h1>Time goes by, and we refactor</h1>
+        </section>
+        <section id="roles">
+            <h1>Today, we have</h1>
+            <pre><code>install.yaml
+enroll.yaml
+deploy.yaml
+
+inventory/localhost
+inventory/baremetal.csv
+inventory/groupvars/all
+
+roles/bifrost-configdrives
+roles/bifrost-setup-nodes
+roles/ironic-deploy
+roles/ironic-enroll
+roles/ironic-install
+            </code></pre>
+        </section>
+        <section id="galaxy">
+            <h1>Reusability == Roles</h1>
+            (and we're going to contribute these to Ansible Galaxy)
+        </section>
+        <section id="lesson4">
+            <h1>Lesson 4:</h1>
+            <h1>A "role" is not a Noun. It's just a collection of actions.</h1>
+        </section>
+
+        <section id="simple1">
+            <h1>Each step is much simpler now</h1>
+            <pre><code>$ cat install.yaml
+---
+- hosts: localhost
+  name: "Install Ironic on the local host."
+  connection: local
+  sudo: yes
+  gather_facts: yes
+  roles:
+    - ironic-install
+
+$ cat enroll.yaml
+---
+- hosts: localhost
+  connection: local
+  name: "Enroll hardware from baremetal.csv into Ironic"
+  sudo: yes
+  gather_facts: yes
+  roles:
+    - role: ironic-enroll
+      baremetal_csv_file: "{{ baremetal_csv_file | mandatory }}"
+
+$ cat deploy.yaml
+---
+- hosts: localhost
+  connection: local
+  name: "Enroll hardware from baremetal.csv into Ironic"
+  sudo: yes
+  gather_facts: yes
+  pre_tasks:
+    - name: "Error if variable baremetal_csv_file is not defined"
+      local_action: fail msg="baremetal_csv_file must be defined for this playbook to execute, please pass option '-e baremetal_csv_file=<path/to/file>'"
+      when: baremetal_csv_file is not defined
+  roles:
+    - role: ironic-deploy
+      baremetal_csv_file: "{{ baremetal_csv_file }}"
+- hosts: localhost
+  connection: local
+  name: "Enroll hardware from baremetal.csv into Ironic"
+  gather_facts: yes
+  roles:
+    - role: bifrost-configdrives
+    - role: bifrost-setup-nodes</code></pre>
+        </section>
+        <section id="old-install">
+            <h1>For reference, the old "setup" file tree:</h1>
+            <pre><code>file:///opt/source/openstack/bifrost/setup
+|-- create_bootable_image.yaml
+|-- env-setup.sh
+|-- env-vars
+|-- files
+|   |-- boot.ipxe
+|   |-- tftpboot-map-file
+|   `-- xinetd.tftp
+|-- install.yaml
+`-- templates
+    |-- agent_config.template.j2
+    |-- dnsmasq.conf.j2
+    |-- init_template.j2
+    |-- ironic.conf.j2
+    `-- nginx.conf.j2</code></pre>
+        </section>
+        <section id="new-install">
+            <h1>New "install" role looks like this:</h1>
+            <pre><code>file:///opt/source/openstack/bifrost/roles/ironic-install
+|-- README.md
+|-- defaults
+|   `-- main.yml
+|-- files
+|   |-- boot.ipxe
+|   |-- tftpboot-map-file
+|   `-- xinetd.tftp
+|-- meta
+|   `-- main.yml
+|-- tasks
+|   |-- create_bootable_image.yml
+|   |-- create_dib_image.yml
+|   |-- dib_install.yml
+|   `-- main.yml
+`-- templates
+    |-- agent_config.template.j2
+    |-- dnsmasq.conf.j2
+    |-- init_template.j2
+    |-- ironic.conf.j2
+    `-- nginx.conf.j2</code></pre>
+        </section>
+        <section id="end">
+            <h1>The End</h1>
+        </section>
+    </div>
+  </div>
+
+  <script src="lib/js/head.min.js"></script>
+  <script src="js/reveal.js"></script>
+  <script>
+      // Full list of configuration options available here:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+          controls: true,
+          progress: true,
+          history: true,
+          center: true,
+
+          theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+          transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+          // Optional libraries used to extend on reveal.js
+          dependencies: [
+              { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+              { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+              { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+              { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+              { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+              { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+              // { src: 'plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+              // { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+          ]
+      });
+  </script>
+</body>
+</html>
