@@ -1,0 +1,22 @@
+// = Ice Breakers
+// See https://hubpress.gitbooks.io/hubpress-knowledgebase/content/ for information about the parameters.
+// :hp-image: /covers/cover.png
+// :published_at: 2019-01-31
+// :hp-tags: HubPress, Blog, Open_Source,
+// :hp-alt-title: Ice Breakers
+
+= Ice breakers
+
+Today is Memorial Day, and through a series of events I find myself at the #ML4ALL conference in Portland. It's been almost ten years since I was at a community-organized conference in this city, and that long since I stepped into a new tech community. Last time, it was open-source databases (which led me to cloud computing). This time, it's Machine Learning.
+
+So, here I am, in a dark room with a few hundred people I don't know, in the lunch line trying to make small talk and wishing I could share with everyone the cool things I've been trying to do lately. If only there was some way to get over the awkwardness of talking to strangers ....
+
+Oh wait.
+
+That's what a stage is for!
+
+So, with lunch halfway over, I signed up for a lighting talk (scheduled for right after lunch), and decided that the best thing I could ramble about (from the point of view of an unexpecting audience, I hoped) would be to try and inspire social change.
+
+You'll find the slides here: (link coming soon)
+
+Sure enough, I felt a lot less awkward after the talk (and after the adrenaline wore off!).
