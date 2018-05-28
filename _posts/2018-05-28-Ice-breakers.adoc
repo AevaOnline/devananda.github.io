@@ -16,5 +16,3 @@ _Oh wait. That's what a stage is for!_
 So, with lunch halfway over, I signed up for a lighting talk (scheduled for right after lunch), and decided that the best thing I could ramble about (from the point of view of an unexpecting audience, I hoped) would be to try and inspire social change and share the FireWise project that I am part of. TL;DR we're trying to use public data sets (sattelite imagery) to predict where wildfires will occur. 
 
 You'll find the slides here: (link coming soon)
-
-Sure enough, I felt a lot less awkward after the talk. 
