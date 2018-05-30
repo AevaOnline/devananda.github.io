@@ -4,3 +4,14 @@
 // :published_at: 2019-01-31
 // :hp-tags: HubPress, Blog, Open_Source,
 // :hp-alt-title: My English Title
+
+I read an article some weeks back which added something interesting (to me, anyway) to the debate as to why humans are unique among animals...
+
+https://aeon.co/essays/the-offloading-ape-the-human-is-the-beast-that-automates
+
+ As we stand on the precipice of a revolution in AI,
+ many are bracing for a huge upheaval in our economic
+ and political systems as this new form of automation
+ redefines what it means to work.
+ 
+The tl;dr is that what makes us human is not that we think ("thinking" is no more a unique biological process than "digestion" or "breathing"), nor that we have developed language or complex social structures, nor that we build tools. Other mammals have done all of that as well, though perhaps not to the degree that humans have ... so, if not that, what makes us unique? The author proposes that it is our propensity to augment our conception of self through the tools we build which sets us apart.
