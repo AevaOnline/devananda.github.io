@@ -1,0 +1,33 @@
+// = Ice Breakers
+// See https://hubpress.gitbooks.io/hubpress-knowledgebase/content/ for information about the parameters.
+// :hp-image: /covers/cover.png
+// :published_at: 2019-01-31
+// :hp-tags: HubPress, Blog, Open_Source,
+// :hp-alt-title: Ice Breakers
+
+= Ice breakers
+:hp-image: /images/firewise-wa-state-header.png
+
+Today is Memorial Day, and thanks to the graciousness of friends, I found
+myself with a free ticket to the #ML4ALL conference in Portland. It has been
+almost ten years since I was at a community-organized conference in this city
+and about that long since I stepped into a new tech community. Last time, it
+was open-source databases like
+https://en.wikipedia.org/wiki/Drizzle_(database_server)[Drizzle], which led me
+to cloud computing; this time, it's Machine Learning.
+
+In a dark room with a few hundred people I didn't know, I stood in the lunch
+line trying to make small talk and feeling shy and anxious, wishing I could
+share with everyone the cool things I've been trying to do lately. If only there
+was some way to get over the awkwardness of talking to strangers ....
+
+_Oh wait. That's what a stage is for!_
+
+So, with lunch halfway over, I signed up for a lighting talk (scheduled for
+right after lunch), and decided that the best thing I could ramble about (from
+the point of view of an unexpecting audience, I hoped) would be to try and
+inspire social change and share the FireWise project that I am part of. TL;DR
+we're trying to use public data sets (sattelite imagery) to predict where
+wildfires will occur.
+
+You'll find the slides here: (link coming soon)
