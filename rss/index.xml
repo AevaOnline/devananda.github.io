@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[Untitled RSS Feed]]></title><description><![CDATA[Untitled RSS Feed]]></description><link>https://devananda.github.io/devananda.github.io</link><generator>RSS for Node</generator><lastBuildDate>Mon, 09 Jul 2018 11:47:32 GMT</lastBuildDate><atom:link href="https://devananda.github.io/devananda.github.io/rss/" rel="self" type="application/rss+xml"/><ttl>60</ttl><item><title><![CDATA[Breaking the Ice]]></title><description><![CDATA[<div class="paragraph">
+<p>Alternate title: Leveraging Anxiety to Overcome Anxiety</p>
+</div>
+<div class="paragraph">
+<p>Thanks to the graciousness of friends, about a month ago I was able to attend the #ML4ALL conference in Portland (which, by the way, was excellent). It had been almost ten years since I was last at a community-organized conference in this city and just about that long since I last stepped into a new tech community. Back in 2008, I was hacking on the open-source database project
+<a href="https://en.wikipedia.org/wiki/Drizzle_(database_server)">Drizzle</a>&#8230;&#8203; these days, I&#8217;m diving into TensorFlow and Keras.</p>
+</div>
+<div class="paragraph">
+<p>So, there I was, waiting in the lunch line in a dark room and trying to make small talk, as one does &#8230;&#8203; but feeling shy and anxious since I didn&#8217;t know anyone at the conference. OpenStack didn&#8217;t seem relevant to this crowd, and I was [and still am] new to the field of ML, so I was having trouble even thinking of small talk. To make social anxiety worse, I don&#8217;t spend a lot of time in Portland so I didn&#8217;t even have local/current events to draw on&#8230;&#8203; And then, like someone dropping a beer can on my foot, it dawned on me&#8230;&#8203;</p>
+</div>
+<div class="paragraph">
+<p><em>I&#8217;m already feeling anxious, like I do before a talk. Maybe if I get on stage, I&#8217;ll feel <strong>less</strong> awkward afterwards!</em></p>
+</div>
+<div class="paragraph">
+<p>With lunch halfway over, I grabbed a little food and hurried over to sign up for a lighting talk&#8201;&#8212;&#8201;slated for immediately after lunch. Nothing like a short deadline to inspire some writing! I decided that the best thing I could ramble about (since I couldn&#8217;t create a great slide deck in 30 minutes) was this side project I&#8217;d started at a Madrona Labs GoVertical event a month before, trying to use LANDSAT images to predict where wildfires will break out.</p>
+</div>
+<div class="paragraph">
+<p>The real message of the talk? Machine Learning can [and should] be used for social good, too, and there are huge public data sets out there you can draw from.</p>
+</div>
+<div class="paragraph">
+<p>And  it worked!  I felt less anxious after I got off stage.</p>
+</div>]]></description><link>https://devananda.github.io/devananda.github.io/2018/05/28/Breaking-the-Ice.html</link><guid isPermaLink="true">https://devananda.github.io/devananda.github.io/2018/05/28/Breaking-the-Ice.html</guid><dc:creator><![CDATA[Devananda van der Veen]]></dc:creator><pubDate>Mon, 28 May 2018 00:00:00 GMT</pubDate></item></channel></rss>
