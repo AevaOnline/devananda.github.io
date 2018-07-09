@@ -18,6 +18,6 @@ _I'm already feeling anxious, like I do before a talk. Maybe if I get on stage, 
 
 With lunch halfway over, I grabbed a little food and hurried over to sign up for a lighting talk -- slated for immediately after lunch. Nothing like a short deadline to inspire some writing! I decided that the best thing I could ramble about (since I couldn't create a great slide deck in 30 minutes) was this side project I'd started at a Madrona Labs GoVertical event a month before, trying to use LANDSAT images to predict where wildfires will break out.
 
-The real message of the talk? Don't forget that Machine Learning can [and should] be used for social good, too, and there are huge public data sets out there you can draw from.
+The real message of the talk? Machine Learning can [and should] be used for social good, too, and there are huge public data sets out there you can draw from.
 
 And  it worked!  I felt less anxious after I got off stage.
